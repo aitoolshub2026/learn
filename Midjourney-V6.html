@@ -129,7 +129,7 @@
             animation: gradient-shift 4s ease-in-out infinite alternate;
             opacity: 0;
             transform: translateY(30px);
-            animation: fadeUp 1s ease 0.3s forwards;
+            animation: fadeUp 1s ease 0.3s forwards, gradient-shift 4s ease-in-out infinite alternate;
         }
 
         @keyframes gradient-shift {
@@ -147,31 +147,24 @@
             animation: fadeUp 1s ease 0.6s forwards;
         }
 
-        /* Section Styling */
-        section {
-            margin-bottom: var(--section-spacing);
-            opacity: 0;
-            transform: translateY(30px);
-            animation: fadeUp 1s ease forwards;
-            animation-play-state: paused;
-        }
-
-        section.visible {
-            animation-play-state: running;
-        }
-
-        section:nth-child(2) { animation-delay: 0.1s; }
-        section:nth-child(3) { animation-delay: 0.2s; }
-        section:nth-child(4) { animation-delay: 0.3s; }
-        section:nth-child(5) { animation-delay: 0.4s; }
-        section:nth-child(6) { animation-delay: 0.5s; }
-        section:nth-child(7) { animation-delay: 0.6s; }
-
         @keyframes fadeUp {
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
+        }
+
+        /* Section Styling */
+        section {
+            margin-bottom: var(--section-spacing);
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        section.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         /* Headings */
@@ -212,24 +205,19 @@
             box-shadow: var(--shadow-soft);
             transition: var(--transition);
             opacity: 0;
-            transform: translateX(-20px);
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .card.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .card:hover {
             transform: translateY(-5px);
             border-color: rgba(34, 211, 238, 0.3);
             box-shadow: var(--shadow-glow);
-        }
-
-        .card.visible {
-            animation: slideIn 0.8s ease forwards;
-        }
-
-        @keyframes slideIn {
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
         }
 
         /* Content Styling */
@@ -323,6 +311,10 @@
             h3 {
                 font-size: 1.3rem;
             }
+            
+            li {
+                padding-left: 1rem;
+            }
         }
 
         /* Scroll Indicator */
@@ -374,6 +366,16 @@
                 animation-duration: 0.01ms !important;
                 animation-iteration-count: 1 !important;
                 transition-duration: 0.01ms !important;
+            }
+            
+            .card {
+                opacity: 1;
+                transform: none;
+            }
+            
+            section {
+                opacity: 1;
+                transform: none;
             }
         }
     </style>
@@ -570,20 +572,62 @@
         </footer>
     </div>
 
-    <!-- CSS-Only Scroll Animation -->
-    <style>
-        /* Intersection Observer simulation with CSS */
-        @media (prefers-reduced-motion: no-preference) {
-            section {
-                animation-timeline: view();
-                animation-range: entry 0% cover 30%;
+    <script>
+        // Simple scroll animation without Intersection Observer dependency
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('section');
+            const cards = document.querySelectorAll('.card');
+            
+            function checkVisibility() {
+                const windowHeight = window.innerHeight;
+                const windowTop = window.scrollY;
+                const windowBottom = windowTop + windowHeight;
+                
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionBottom = sectionTop + section.offsetHeight;
+                    
+                    // Check if section is in viewport
+                    if (sectionBottom >= windowTop && sectionTop <= windowBottom - 100) {
+                        section.classList.add('visible');
+                    }
+                });
+                
+                cards.forEach(card => {
+                    const cardTop = card.offsetTop;
+                    const cardBottom = cardTop + card.offsetHeight;
+                    
+                    // Check if card is in viewport
+                    if (cardBottom >= windowTop && cardTop <= windowBottom - 100) {
+                        card.classList.add('visible');
+                    }
+                });
             }
             
-            .card {
-                animation-timeline: view();
-                animation-range: entry 10% cover 25%;
-            }
-        }
-    </style>
+            // Initial check
+            checkVisibility();
+            
+            // Check on scroll
+            window.addEventListener('scroll', checkVisibility);
+            window.addEventListener('resize', checkVisibility);
+            
+            // Smooth scroll for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
